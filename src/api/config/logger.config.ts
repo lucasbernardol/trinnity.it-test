@@ -1,15 +1,13 @@
+import { env } from 'node:process';
+
 import * as Winston from 'winston';
 import 'winston-daily-rotate-file';
 
+console.log(env.NODE_ENV);
+
 import { format, Logger as WinstonLogger } from 'winston';
 
-import { resolve } from 'node:path';
-
-import {} from 'winston';
-
-const LOGS_DIR = resolve(__dirname, '..', '..', '..', 'temp', 'logs');
-
-const env = 'dev';
+import { LOGGER_DEVELOPMENT, LOGGER_PRODUCTION } from '../constants';
 
 type DailyTransporter =
   typeof Winston.transports.DailyRotateFileTransportOptions;
@@ -38,10 +36,11 @@ class LoggerConfiguration {
 
   private readonly options: LoggerConfigOptions = {
     error: {
-      json: false,
+      json: true,
       level: 'error',
       filename: 'trinity-error-%DATE%',
-      dirname: LOGS_DIR,
+      dirname:
+        env.NODE_ENV === 'production' ? LOGGER_PRODUCTION : LOGGER_DEVELOPMENT,
       datePattern: 'YYYY-MM-DD-HH',
       maxSize: '20m',
       maxFiles: '16d',
@@ -54,10 +53,11 @@ class LoggerConfiguration {
       extension: '.log',
     },
     info: {
-      json: false,
+      json: true,
       level: 'info',
       filename: 'trinity-info-%DATE%',
-      dirname: LOGS_DIR,
+      dirname:
+        env.NODE_ENV === 'production' ? LOGGER_PRODUCTION : LOGGER_DEVELOPMENT,
       datePattern: 'YYYY-MM-DD-HH',
       maxSize: '20m',
       maxFiles: '16d',
@@ -86,7 +86,7 @@ class LoggerConfiguration {
       exitOnError: false,
     });
 
-    if (!['production', 'test'].includes(env)) {
+    if (!['production', 'test'].includes(env.NODE_ENV as any)) {
       this.logger.add(new Winston.transports.Console(this.options.debug));
     }
 

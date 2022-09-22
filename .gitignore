@@ -1,5 +1,8 @@
 node_modules/
 ormconfig.json
 
-temp/logs/*
-!temp/logs/.gitkeep
+tmp/logs/production/*
+!tmp/logs/production/.gitkeep
+
+tmp/logs/development/*
+!tmp/logs/development/.gitkeep

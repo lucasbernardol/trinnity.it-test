@@ -23,7 +23,7 @@ type ServerListenConfigOptions = {
 class ServerConfiguration {
   private static instance: ServerConfiguration;
 
-  private _port: number = 300;
+  private _port: number = 3333;
   private _application!: Application | HTTPServer;
 
   /**
@@ -60,7 +60,7 @@ class ServerConfiguration {
   public listen({
     port = this._port,
     callback,
-  }: ServerListenConfigOptions): HTTPServer {
+  }: ServerListenConfigOptions = {}): HTTPServer {
     const isCallbackFunction: boolean = typeof callback === 'function';
 
     const handleCallback = (params: any) => {

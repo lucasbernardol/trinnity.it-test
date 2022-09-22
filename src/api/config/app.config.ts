@@ -10,9 +10,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import hpp from 'hpp';
 
-import morgan from 'morgan';
-
 import { ExpressFactory } from '../core/factories/express.factory';
+import { MorganConfiguration } from './morgan.config';
+import { routes } from '../core/routes/v1/index.routes';
 /**
  * - `Express.js` config/application.
  * @class Application
@@ -50,7 +50,9 @@ class ApplicationConfiguration {
      */
     this.application.use(hpp({ checkBody: false }));
 
-    this.application.use(morgan('dev'));
+    this.application.use(MorganConfiguration.use());
+
+    this.application.use(routes);
 
     return this;
   }
