@@ -1,21 +1,28 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 
-// `Express.js` @Safe decorator.
+const _DEFUALT_HTTP_STATUS_CODE: number = 200;
+
+/**
+ *  - `Express.js` @Safe decorator.
+ * @see https://expressjs.com
+ */
 
 type SafeOptions = {
   isAttached?: boolean;
 };
 
-export type MethodExecutionConfig = {
+export type SafeExecutionConfig = {
+  _meta?: any;
   headers?: Record<string, any>;
-  data: any;
+  data?: any;
   atempt?: {
     status: number;
   };
 };
 
-const METHOD_EXECUTION_CONFIG: Partial<MethodExecutionConfig> = {
+const METHOD_EXECUTION_CONFIG: Partial<SafeExecutionConfig> = {
   headers: {},
+  _meta: null,
   data: null,
   atempt: {
     status: 200,
@@ -33,32 +40,38 @@ function parser<T = any>(to: Partial<T>, at: Partial<T>): T {
 export function Safe({ isAttached }: SafeOptions = { isAttached: true }) {
   // Decorator closure
   return (target: any, _proportyKey: string, descriptor: Record<any, any>) => {
-    const _method = target[_proportyKey];
+    const _method = target[_proportyKey] as (
+      ...args: any[]
+    ) => Promise<SafeExecutionConfig>;
 
-    async function _run<T>(
+    async function _methodExecution<T>(
       context: any,
       args: T[]
-    ): Promise<MethodExecutionConfig> {
+    ): Promise<SafeExecutionConfig> {
       const _self = context; // scoped
 
-      const response: MethodExecutionConfig = await _method.apply(_self, args);
+      const response = await _method.apply(_self, args);
 
-      const { headers, data, atempt } = parser<MethodExecutionConfig>(
+      let { headers, data, atempt, _meta } = parser<SafeExecutionConfig>(
         METHOD_EXECUTION_CONFIG,
         response
       );
 
-      return { headers, data, atempt };
+      return {
+        data: _meta ? { data, _meta } : data,
+        headers,
+        atempt,
+      };
     }
 
     // base
-    async function _(context: any, args: any[]) {
-      const { headers, atempt, data } = await _run(context, args);
+    async function safeRequest(context: any, args: any[]): Promise<void> {
+      const { headers, atempt, data } = await _methodExecution(context, args);
 
       // `Express.js` response object.
       const _response = args[1] as Response;
 
-      const statusCode = atempt?.status || 200;
+      const statusCode = atempt?.status || _DEFUALT_HTTP_STATUS_CODE;
 
       /**
        * - Add `statusCode` and request `headers`.
@@ -68,9 +81,7 @@ export function Safe({ isAttached }: SafeOptions = { isAttached: true }) {
 
       // Attach response.locals value.
       if (isAttached) {
-        return (_response.locals.data = data) as any;
-      } else {
-        return null;
+        return (_response.locals.data = data);
       }
     }
 
@@ -82,15 +93,15 @@ export function Safe({ isAttached }: SafeOptions = { isAttached: true }) {
       //const { files } = args[0] as { files: any[] };
 
       // `Express.js` next function.
-      const _next = args[2] as NextFunction;
+      const _nextFunction = args[2] as NextFunction;
 
       const next = (e?: Error): void => {
-        return e ? _next(e) : _next();
+        return e ? _nextFunction(e) : _nextFunction();
       };
 
-      return _(this, args)
+      return safeRequest(this, args)
         .then(() => next())
-        .catch((e) => next(e)) as any;
+        .catch((error) => next(error)) as any;
     };
 
     return target[_proportyKey];

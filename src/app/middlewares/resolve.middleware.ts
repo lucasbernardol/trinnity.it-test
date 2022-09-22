@@ -24,7 +24,7 @@ class Resolve {
   async use(_: Request, response: Response, next: NextFunction) {
     const { data } = response.locals as { data: any }; // clean
 
-    console.log(response.statusCode);
+    //console.log(response.statusCode);
 
     return response.json(data);
   }

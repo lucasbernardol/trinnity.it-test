@@ -6,7 +6,7 @@ import { Abbreviation } from '../entities/abbreviation.entity';
 import { NanoIdFactory } from '../../nanoid.factory';
 
 import {
-  MethodExecutionConfig,
+  SafeExecutionConfig,
   Safe,
 } from '../typings/decorators/safe.decorator';
 
@@ -15,7 +15,7 @@ export class AbbreviationController {
    * - All
    */
   @Safe()
-  async all(request: Request, _: Response): Promise<MethodExecutionConfig> {
+  async all(request: Request, _: Response): Promise<SafeExecutionConfig> {
     const abbreviationRepository = getRepository(Abbreviation);
 
     const abbreviationsPlain = await abbreviationRepository.find({
@@ -29,17 +29,48 @@ export class AbbreviationController {
     const abbreviations = instanceToPlain(abbreviationsPlain);
 
     return {
-      atempt: {
-        status: 200,
-      },
       data: {
-        data: { abbreviations },
-        _meta: {
-          api: {
-            version: '1.0.0',
-          },
-          authors: ['José Lucas - @lucasbernardol'],
+        type: 'abbreviations',
+        abbreviations,
+      },
+      _meta: {
+        version: '1.0.0',
+        self: {
+          method: 'GET',
+          path: '/api/v1/abbreviations',
         },
+        pagination: {},
+        authors: ['José Lucas - @lucasbernardol'],
+      },
+    };
+  }
+
+  @Safe()
+  async findById(request: Request, _: Response): Promise<SafeExecutionConfig> {
+    const { id } = request.params as { id: string };
+
+    const identifier: number = Number(id);
+
+    const abbreviationRepository = getRepository(Abbreviation);
+
+    const abbreviationPlain = await abbreviationRepository.findOne({
+      where: {
+        id: identifier,
+      },
+    });
+
+    // Add `targed_url` field.
+    const abbreviation = instanceToPlain(abbreviationPlain);
+
+    return {
+      data: abbreviation ?? null,
+      _meta: {
+        version: '1.0.0',
+        self: {
+          method: 'GET',
+          path: '/api/v1/abbreviations',
+        },
+        authors: ['José Lucas - @lucasbernardol'],
       },
     };
   }
@@ -48,7 +79,7 @@ export class AbbreviationController {
    * - Create
    */
   @Safe()
-  async create(request: Request, _: Response): Promise<MethodExecutionConfig> {
+  async create(request: Request, _: Response): Promise<SafeExecutionConfig> {
     const { original_url } = request.body as { original_url: string };
 
     const abbreviationRepository = getRepository(Abbreviation);
@@ -79,7 +110,7 @@ export class AbbreviationController {
    * @description All `abbreviations` in trash.
    */
   @Safe()
-  async inTrash(request: Request, _: Response): Promise<MethodExecutionConfig> {
+  async inTrash(request: Request, _: Response): Promise<SafeExecutionConfig> {
     const abbreviationsRepository = getRepository(Abbreviation);
 
     const abbreviations = await abbreviationsRepository.find({

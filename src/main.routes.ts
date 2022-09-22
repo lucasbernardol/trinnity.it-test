@@ -20,8 +20,11 @@ routes.get('/health', (_, response) => response.json({ status: 'UP' }));
 routes.get('/r/:hash', abbreviations.redirect);
 
 routes.get('/api/v1/abbreviations', abbreviations.all, ResolveMiddleware.use);
-routes.get('/api/v1/abbreviations/r/:hash', abbreviations.redirect);
-routes.get('/api/v1/abbreviations/redirect/:hash', abbreviations.redirect);
+routes.get(
+  '/api/v1/abbreviations/:id',
+  abbreviations.findById,
+  ResolveMiddleware.use
+);
 
 routes.post(
   '/api/v1/abbreviations',
