@@ -1,11 +1,12 @@
 import express, { Application } from 'express';
 
-export class ExpressFactory {
+class ExpressFactory {
   /**
-   * - `Express.js` application instance.
-   * @returns Application
+   * @description `Express.js` apllication/instance.
    */
   static create(): Application {
     return express();
   }
 }
+
+export { ExpressFactory };

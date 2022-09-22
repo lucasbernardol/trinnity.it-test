@@ -1,6 +1,10 @@
 ###
 GET http://localhost:3333/ HTTP/1.1
 
+###
+GET http://localhost:3333/astra HTTP/1.1
+
+
 ### REDIRECT
 GET http://localhost:3333/r/5tUBbkPyyX8-a0R9 HTTP/1.1
 
@@ -23,3 +27,5 @@ Content-Type: application/json
 
 ### TRASH
 GET http://localhost:3333/api/v1/trash/abbreviations HTTP/1.1
+
+
