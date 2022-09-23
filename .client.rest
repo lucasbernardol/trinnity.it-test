@@ -29,10 +29,10 @@ Content-Type: application/json
 
 
 ### SOFT DELETE
-PATCH http://localhost:3333/api/v1/abbreviations/3/trash HTTP/1.1
+PATCH http://localhost:3333/api/v1/abbreviations/4/trash HTTP/1.1
 
 ### SOFT RESTORE
-PATCH http://localhost:3333/api/v1/abbreviations/3/restore HTTP/1.1
+PATCH http://localhost:3333/api/v1/abbreviations/4/restore HTTP/1.1
 
 ### DELETE
 DELETE http://localhost:3333/api/v1/abbreviations/3 HTTP/1.1

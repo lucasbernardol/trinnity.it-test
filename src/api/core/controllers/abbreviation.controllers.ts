@@ -1,38 +1,33 @@
 import { Request, Response, NextFunction } from 'express';
-import { IsNull, Not } from 'typeorm';
 
 // prettier-ignore
 import { 
-  AbbreviationRepositoryFactory 
-} from '../factories/abbreviation-repository.factory';
+  AbbrebiationBusinessFactory 
+} from '../factories/abbreviation-business.factory';
 
-import { NanoIDFactory } from '../factories/nanoid.factory';
-
-// prettier-ignore
-import { 
-  AbbreviationBusiness,
-} from '../services/business/abbreviation.business';
-
+/**
+ * @class AbbreviationController
+ */
 class AbbreviationController {
-  async all(request: Request, response: Response) {
-    const abbreviationBusiness = new AbbreviationBusiness();
+  async all(request: Request, response: Response, next: NextFunction) {
+    try {
+      const abbreviationBusiness = AbbrebiationBusinessFactory.business();
 
-    const { abbreviations } = await abbreviationBusiness.all();
+      const { abbreviations } = await abbreviationBusiness.all();
 
-    return response.json({ abbreviations });
+      return response.json({ abbreviations });
+    } catch (error) {
+      return next(error);
+    }
   }
 
   async findById(request: Request, response: Response, next: NextFunction) {
     try {
       const { id } = request.params as { id: string };
 
-      const abbreviationRepository = AbbreviationRepositoryFactory.repository();
+      const abbreviationBusiness = AbbrebiationBusinessFactory.business();
 
-      const abbreviation = await abbreviationRepository.findOne({
-        where: {
-          id,
-        },
-      });
+      const { abbreviation } = await abbreviationBusiness.findById({ id });
 
       return response.json(abbreviation);
     } catch (error) {
@@ -44,20 +39,13 @@ class AbbreviationController {
     try {
       const { original_url } = request.body as { original_url: string };
 
-      const abbreviationRepository = AbbreviationRepositoryFactory.repository();
+      const abbreviationBusiness = AbbrebiationBusinessFactory.business();
 
-      const hash = NanoIDFactory.id();
-
-      const abbreviationInstance = abbreviationRepository.create({
+      const { abbreviation } = await abbreviationBusiness.insert({
         original_url,
-        hash,
       });
 
-      const abbreviation = await abbreviationRepository.save(
-        abbreviationInstance
-      );
-
-      return response.json(abbreviation);
+      return response.status(201).json(abbreviation); // created
     } catch (error) {
       return next(error);
     }
@@ -70,16 +58,11 @@ class AbbreviationController {
     try {
       const { id } = request.params as unknown as { id: number };
 
-      const abbreviationRepository = AbbreviationRepositoryFactory.repository();
+      const abbreviationBusiness = AbbrebiationBusinessFactory.business();
 
-      const abbreviation = await abbreviationRepository.softDelete({
-        id,
-        deleted_at: IsNull(),
-      });
+      const { trashed } = await abbreviationBusiness.insertTrashById({ id });
 
-      //console.log(abbreviation);
-
-      return response.sendStatus(204).end(); // No response.
+      return response.json({ trashed });
     } catch (error) {
       return next(error);
     }
@@ -93,29 +76,11 @@ class AbbreviationController {
     try {
       const { id } = request.params as unknown as { id: number };
 
-      const abbreviationRepository = AbbreviationRepositoryFactory.repository();
+      const abbreviationBusiness = AbbrebiationBusinessFactory.business();
 
-      /**
-       * QUERY:
-       *  UPDATE
-       *    abbreviations as abbreviation
-       *  SET
-       *    abbreviation.deleted_at = NULL,
-       *    abbreviation.updated_at = CURRENT_TIMESTAMP,
-       *    abbreviation._version = "abbreviation._version" + 1
-       *  WHERE
-       *    abbreviation.id = '$1'
-       *      AND
-       *    NOT("abbreviation.deleted_at" IS NULL);
-       */
-      const abbreviation = await abbreviationRepository.restore({
-        id: id,
-        deleted_at: Not(IsNull()),
-      });
+      const { restored } = await abbreviationBusiness.restoreTrashById({ id });
 
-      process.stdout.write(JSON.stringify(abbreviation, null, 2));
-
-      return response.sendStatus(204).end();
+      return response.json({ restored });
     } catch (error) {
       return next(error);
     }
@@ -125,17 +90,11 @@ class AbbreviationController {
     try {
       const { id } = request.params as unknown as { id: number };
 
-      const abbreviationRepository = AbbreviationRepositoryFactory.repository();
+      const abbreviationBusiness = AbbrebiationBusinessFactory.business();
 
-      // Remove "abbreviation"
-      const abbreviation = await abbreviationRepository.delete({
-        id,
-        deleted_at: Not(IsNull()),
-      });
+      const { deleted } = await abbreviationBusiness.delete({ id });
 
-      const { affected } = abbreviation;
-
-      return response.status(200).json({ deleted: !!affected });
+      return response.status(200).json({ deleted });
     } catch (error) {
       return next(error);
     }
