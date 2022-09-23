@@ -26,10 +26,10 @@ export class Abbreviation implements EntityContract {
   id!: number;
 
   @Column()
-  target_url!: number;
+  target_url!: string;
 
   @Column()
-  original_url!: number;
+  original_url!: string;
 
   @Column()
   hash!: string;
