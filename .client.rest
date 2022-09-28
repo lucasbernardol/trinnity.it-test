@@ -10,11 +10,18 @@ GET http://localhost:3333/r/5tUBbkPyyX8-a0R9 HTTP/1.1
 
 ### KEYS
 GET http://localhost:3333/api/v1/keys/abbreviations HTTP/1.1
+Content-Type: application/json
+Origin: http://localhost:3333
+
+### OPTIONS
+OPTIONS http://localhost:3333 HTTP/1.1
 
 ### ------------
 
 ### ALL
 GET http://localhost:3333/api/v1/abbreviations HTTP/1.1
+Content-Type: application/json
+Origin: https://client.com.br
 
 ### BY ID
 GET http://localhost:3333/api/v1/abbreviations/1 HTTP/1.1

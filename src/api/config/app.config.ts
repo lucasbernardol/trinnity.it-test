@@ -13,6 +13,11 @@ import hpp from 'hpp';
 import { ExpressFactory } from '../core/factories/express.factory';
 import { MorganConfiguration } from './morgan.config';
 import { routes } from '../core/routes/v1/index.routes';
+
+import { Origin } from '../core/middlewares/origin.middleware';
+import { CatchMiddleware } from '../core/middlewares/catch.middleware';
+import { RouterProxy } from '../core/services/router-proxy.service';
+
 /**
  * - `Express.js` config/application.
  * @class Application
@@ -41,6 +46,8 @@ class ApplicationConfiguration {
     this.application.use(Json());
     this.application.use(URLEncoded({ extended: false }));
 
+    this.application.use(Origin.use());
+
     this.application.use(cors());
 
     this.application.use(helmet());
@@ -52,7 +59,9 @@ class ApplicationConfiguration {
 
     this.application.use(MorganConfiguration.use());
 
-    this.application.use(routes);
+    this.application.use('/api/v1', new RouterProxy().load().router);
+
+    this.application.use(CatchMiddleware.use());
 
     return this;
   }
